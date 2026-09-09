@@ -13,13 +13,13 @@ log = logging.getLogger(__name__)
 
 # ── MongoDB connection ──────────────────────────────────────────────────────
 MONGO_URI  = os.getenv("MONGO_URI", "mongodb://mongo:27017")
-MONGO_DB   = os.getenv("MONGO_DB",  "frontend_db")
+MONGO_DB   = os.getenv("MONGO_DB",  "iteraction_db")
 
 # ── S3 config ───────────────────────────────────────────────────────────────
 S3_BUCKET  = os.getenv("S3_BUCKET",  "my-ingesta-bucket")
-S3_PREFIX  = os.getenv("S3_PREFIX",  "frontend")
+S3_PREFIX  = os.getenv("S3_PREFIX",  "iteraction")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/tmp/output/frontend")
+OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/tmp/output/iteraction")
 
 def get_client():
     return MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
@@ -66,7 +66,7 @@ def upload_to_s3(local_path: str, s3_key: str):
 
 def main():
     date_partition = datetime.utcnow().strftime("%Y-%m-%d")
-    log.info("=== Ingesta Frontend (MongoDB) ===")
+    log.info("=== Ingesta Interaction (MongoDB) ===")
     log.info(f"Conectando a MongoDB: {MONGO_URI} / DB: {MONGO_DB}")
 
     client = get_client()
@@ -94,7 +94,7 @@ def main():
             upload_to_s3(local_path, s3_key)
 
     client.close()
-    log.info(f"=== Ingesta Frontend finalizada. Total documentos exportados: {total_rows} ===")
+    log.info(f"=== Ingesta Interaction finalizada. Total documentos exportados: {total_rows} ===")
 
 if __name__ == "__main__":
     main()

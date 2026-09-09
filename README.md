@@ -9,7 +9,7 @@ Pipeline de ingesta de datos para el proyecto ProyCloud. Extrae el 100% de los r
 | `backend_catalogo`      | Java / Spring Boot     | PostgreSQL             | ✅ Sí         |
 | `backend_comunity`      | Python / FastAPI       | MySQL                  | ✅ Sí         |
 | `cinema-session-service`| Python / FastAPI       | **Ninguna (stateless)**| ❌ No aplica  |
-| `frontend`              | Node.js                | MongoDB                | ✅ Sí         |
+| `iteraction-service`      | Node.js                | MongoDB                | ✅ Sí         |
 
 > **¿Por qué `cinema-session-service` no tiene contenedor de ingesta?**
 > Este microservicio gestiona salas de cine en vivo (sincronización de reproducción y chat en tiempo real). Su estado es **efímero** — vive únicamente en la memoria RAM del proceso mientras el contenedor está activo. No persiste ningún dato en base de datos; cuando la sesión termina, la información se descarta por diseño. Por lo tanto, no hay datos que extraer ni ingestar. Si en el futuro se requiriera guardar historial de sesiones, ese dato debería residir en un servicio de Analytics, no en este microservicio.
@@ -17,9 +17,9 @@ Pipeline de ingesta de datos para el proyecto ProyCloud. Extrae el 100% de los r
 ## Arquitectura de ingesta
 
 ```
-[PostgreSQL]  →  ingesta-catalogo  →  s3://bucket/catalogo/YYYY-MM-DD/
-[MySQL]       →  ingesta-comunity  →  s3://bucket/comunity/YYYY-MM-DD/
-[MongoDB]     →  ingesta-frontend  →  s3://bucket/frontend/YYYY-MM-DD/
+[PostgreSQL]  →  ingesta-catalogo   →  s3://bucket/catalogo/YYYY-MM-DD/
+[MySQL]       →  ingesta-comunity   →  s3://bucket/comunity/YYYY-MM-DD/
+[MongoDB]     →  ingesta-iteraction →  s3://bucket/iteraction/YYYY-MM-DD/
 ```
 
 ## Estructura del repositorio
@@ -36,7 +36,7 @@ ingesta-mv-cloud/
 │   ├── Dockerfile
 │   ├── requirements.txt
 │   └── ingest.py               # Extrae de MySQL → CSV → S3
-└── ingesta-frontend/
+└── ingesta-iteraction/
     ├── Dockerfile
     ├── requirements.txt
     └── ingest.py               # Extrae de MongoDB → CSV → S3
@@ -46,9 +46,9 @@ ingesta-mv-cloud/
 
 | Microservicio   | Base de datos | Tablas / Colecciones                                                                 |
 |-----------------|---------------|--------------------------------------------------------------------------------------|
-| backend_catalogo | PostgreSQL   | `movie`, `artist`, `genre`, `movie_genre`, `movie_artist`, `movie_video_source`, `movie_subtitle` |
-| backend_comunity | MySQL        | `users`, `clubs`, `memberships`, `watch_rooms`, `watch_participants`                |
-| frontend         | MongoDB      | configurable vía `MONGO_COLLECTIONS` (env var)                                       |
+| `backend_catalogo` | PostgreSQL   | `movie`, `artist`, `genre`, `movie_genre`, `movie_artist`, `movie_video_source`, `movie_subtitle` |
+| `backend_comunity` | MySQL        | `users`, `clubs`, `memberships`, `watch_rooms`, `watch_participants`                |
+| `iteraction-service`| MongoDB      | Extrae dinámicamente todas las colecciones (`reviews`, `likes`, `watchlists`, etc.) |
 
 ## Uso
 
@@ -98,16 +98,16 @@ Todas las variables se configuran en el archivo `.env`. Consulta `.env.example` 
 |--------------------------------|-------------------------|
 | `villabos/ingesta-catalogo:latest` | Ingesta PostgreSQL   |
 | `villabos/ingesta-comunity:latest` | Ingesta MySQL        |
-| `villabos/ingesta-frontend:latest` | Ingesta MongoDB      |
+| `villabos/ingesta-iteraction:latest` | Ingesta MongoDB      |
 
 Para publicar las imágenes:
 
 ```bash
 docker build -t villabos/ingesta-catalogo:latest ./ingesta-catalogo
 docker build -t villabos/ingesta-comunity:latest ./ingesta-comunity
-docker build -t villabos/ingesta-frontend:latest ./ingesta-frontend
+docker build -t villabos/ingesta-iteraction:latest ./ingesta-iteraction
 
 docker push villabos/ingesta-catalogo:latest
 docker push villabos/ingesta-comunity:latest
-docker push villabos/ingesta-frontend:latest
+docker push villabos/ingesta-iteraction:latest
 ```

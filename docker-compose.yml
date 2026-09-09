@@ -43,15 +43,15 @@ services:
       AWS_REGION:     ${AWS_REGION:-us-east-1}
       OUTPUT_DIR:     /tmp/output/comunity
 
-  # ── Ingesta: frontend (MongoDB) ────────────────────────────
-  ingesta-frontend:
-    image: villabos/ingesta-frontend:latest
-    # build: ./ingesta-frontend
+  # ── Ingesta: iteraction (MongoDB) ────────────────────────────
+  ingesta-iteraction:
+    image: villabos/ingesta-iteraction:latest
+    # build: ./ingesta-iteraction
     restart: "no"
     environment:
       MONGO_URI:  ${MONGO_URI}
-      MONGO_DB:   ${MONGO_DB:-frontend_db}
+      MONGO_DB:   ${MONGO_DB:-iteraction_db}
       S3_BUCKET:  ${S3_BUCKET}
-      S3_PREFIX:  frontend
+      S3_PREFIX:  iteraction
       AWS_REGION: ${AWS_REGION:-us-east-1}
-      OUTPUT_DIR: /tmp/output/frontend
+      OUTPUT_DIR: /tmp/output/iteraction
