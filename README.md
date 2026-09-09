@@ -1,8 +1,20 @@
 # Ingesta MV Cloud
 
-Pipeline de ingesta de datos para el proyecto ProyCloud. Extrae el 100% de los registros de los 3 microservicios y los carga como archivos CSV en un bucket Amazon S3, listos para ser catalogados por AWS Glue y consultados con AWS Athena.
+Pipeline de ingesta de datos para el proyecto ProyCloud. Extrae el 100% de los registros de los microservicios con base de datos persistente y los carga como archivos CSV en un bucket Amazon S3, listos para ser catalogados por AWS Glue y consultados con AWS Athena.
 
-## Arquitectura
+## Microservicios del proyecto
+
+| Microservicio           | Stack                  | Base de datos          | ¿Se ingesta? |
+|-------------------------|------------------------|------------------------|--------------|
+| `backend_catalogo`      | Java / Spring Boot     | PostgreSQL             | ✅ Sí         |
+| `backend_comunity`      | Python / FastAPI       | MySQL                  | ✅ Sí         |
+| `cinema-session-service`| Python / FastAPI       | **Ninguna (stateless)**| ❌ No aplica  |
+| `frontend`              | Node.js                | MongoDB                | ✅ Sí         |
+
+> **¿Por qué `cinema-session-service` no tiene contenedor de ingesta?**
+> Este microservicio gestiona salas de cine en vivo (sincronización de reproducción y chat en tiempo real). Su estado es **efímero** — vive únicamente en la memoria RAM del proceso mientras el contenedor está activo. No persiste ningún dato en base de datos; cuando la sesión termina, la información se descarta por diseño. Por lo tanto, no hay datos que extraer ni ingestar. Si en el futuro se requiriera guardar historial de sesiones, ese dato debería residir en un servicio de Analytics, no en este microservicio.
+
+## Arquitectura de ingesta
 
 ```
 [PostgreSQL]  →  ingesta-catalogo  →  s3://bucket/catalogo/YYYY-MM-DD/
