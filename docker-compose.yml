@@ -1,0 +1,58 @@
+# ============================================================
+#  docker-compose.yml — Ingesta MV Cloud
+#  Uso: docker compose up
+#  Configura las variables de entorno en el archivo .env
+# ============================================================
+
+services:
+
+  # ── Ingesta: backend_catalogo (PostgreSQL) ─────────────────
+  ingesta-catalogo:
+    image: dado4cs/ingesta-catalogo:latest
+    # Para desarrollo local puedes hacer build en lugar de image:
+    # build: ./ingesta-catalogo
+    restart: "no"   # El contenedor corre una vez y termina
+    environment:
+      PG_HOST:     ${PG_HOST}
+      PG_PORT:     ${PG_PORT:-5432}
+      PG_DB:       ${PG_DB:-cinema_catalog}
+      PG_USER:     ${PG_USER:-postgres}
+      PG_PASSWORD: ${PG_PASSWORD}
+      S3_BUCKET:   ${S3_BUCKET}
+      S3_PREFIX:   catalogo
+      AWS_REGION:  ${AWS_REGION:-us-east-1}
+      OUTPUT_DIR:  /tmp/output/catalogo
+      # Si usas un rol IAM en la EC2, NO necesitas estas variables.
+      # Solo ponlas si corres fuera de AWS con credenciales de usuario IAM:
+      # AWS_ACCESS_KEY_ID:     ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+  # ── Ingesta: backend_comunity (MySQL) ──────────────────────
+  ingesta-comunity:
+    image: dado4cs/ingesta-comunity:latest
+    # build: ./ingesta-comunity
+    restart: "no"
+    environment:
+      MYSQL_HOST:     ${MYSQL_HOST}
+      MYSQL_PORT:     ${MYSQL_PORT:-3306}
+      MYSQL_DB:       ${MYSQL_DB:-community_db}
+      MYSQL_USER:     ${MYSQL_USER:-community}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      S3_BUCKET:      ${S3_BUCKET}
+      S3_PREFIX:      comunity
+      AWS_REGION:     ${AWS_REGION:-us-east-1}
+      OUTPUT_DIR:     /tmp/output/comunity
+
+  # ── Ingesta: frontend (MongoDB) ────────────────────────────
+  ingesta-frontend:
+    image: dado4cs/ingesta-frontend:latest
+    # build: ./ingesta-frontend
+    restart: "no"
+    environment:
+      MONGO_URI:         ${MONGO_URI}
+      MONGO_DB:          ${MONGO_DB:-frontend_db}
+      MONGO_COLLECTIONS: ${MONGO_COLLECTIONS:-sessions,notifications,preferences,activity_logs}
+      S3_BUCKET:         ${S3_BUCKET}
+      S3_PREFIX:         frontend
+      AWS_REGION:        ${AWS_REGION:-us-east-1}
+      OUTPUT_DIR:        /tmp/output/frontend
