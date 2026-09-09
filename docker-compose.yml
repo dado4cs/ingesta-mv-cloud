@@ -49,10 +49,9 @@ services:
     # build: ./ingesta-frontend
     restart: "no"
     environment:
-      MONGO_URI:         ${MONGO_URI}
-      MONGO_DB:          ${MONGO_DB:-frontend_db}
-      MONGO_COLLECTIONS: ${MONGO_COLLECTIONS:-sessions,notifications,preferences,activity_logs}
-      S3_BUCKET:         ${S3_BUCKET}
-      S3_PREFIX:         frontend
-      AWS_REGION:        ${AWS_REGION:-us-east-1}
-      OUTPUT_DIR:        /tmp/output/frontend
+      MONGO_URI:  ${MONGO_URI}
+      MONGO_DB:   ${MONGO_DB:-frontend_db}
+      S3_BUCKET:  ${S3_BUCKET}
+      S3_PREFIX:  frontend
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      OUTPUT_DIR: /tmp/output/frontend

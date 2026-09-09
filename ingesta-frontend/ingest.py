@@ -12,8 +12,8 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # ── MongoDB connection ──────────────────────────────────────────────────────
-MONGO_URI  = os.getenv("MONGO_URI",  "mongodb://mongo:27017")
-MONGO_DB   = os.getenv("MONGO_DB",   "frontend_db")
+MONGO_URI  = os.getenv("MONGO_URI", "mongodb://mongo:27017")
+MONGO_DB   = os.getenv("MONGO_DB",  "frontend_db")
 
 # ── S3 config ───────────────────────────────────────────────────────────────
 S3_BUCKET  = os.getenv("S3_BUCKET",  "my-ingesta-bucket")
@@ -21,39 +21,31 @@ S3_PREFIX  = os.getenv("S3_PREFIX",  "frontend")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/tmp/output/frontend")
 
-# ── Collections to extract ───────────────────────────────────────────────────
-# These are the expected collections for the Frontend microservice.
-# Adjust the list if your compañero uses different collection names.
-COLLECTIONS = os.getenv("MONGO_COLLECTIONS", "sessions,notifications,preferences,activity_logs")
-
 def get_client():
     return MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
 
 def flatten_doc(doc: dict, parent_key: str = "", sep: str = ".") -> dict:
-    """Recursively flatten a nested MongoDB document for CSV serialization."""
+    """Aplana un documento MongoDB anidado para poder escribirlo en CSV."""
     items = {}
     for key, value in doc.items():
         new_key = f"{parent_key}{sep}{key}" if parent_key else key
         if isinstance(value, dict):
             items.update(flatten_doc(value, new_key, sep))
         elif isinstance(value, list):
-            # Convert lists to a pipe-separated string
             items[new_key] = "|".join(str(v) for v in value)
         else:
             items[new_key] = value
     return items
 
 def export_collection_to_csv(db, collection_name: str, output_path: str) -> int:
-    """Dump all documents of a MongoDB collection into a CSV file."""
-    log.info(f"Exporting collection '{collection_name}'...")
-    collection = db[collection_name]
-    documents  = list(collection.find({}, {"_id": 0}))  # exclude Mongo internal _id
+    """Exporta todos los documentos de una colección a CSV. Devuelve el conteo."""
+    log.info(f"  Exportando colección '{collection_name}'...")
+    documents = list(db[collection_name].find({}, {"_id": 0}))
 
     if not documents:
-        log.info(f"  → Collection '{collection_name}' is empty, skipping.")
+        log.info(f"  → Colección '{collection_name}' vacía, omitida.")
         return 0
 
-    # Flatten all docs and collect all unique keys for the CSV header
     flat_docs = [flatten_doc(doc) for doc in documents]
     all_keys  = list(dict.fromkeys(k for doc in flat_docs for k in doc.keys()))
 
@@ -63,25 +55,32 @@ def export_collection_to_csv(db, collection_name: str, output_path: str) -> int:
         writer.writeheader()
         writer.writerows(flat_docs)
 
-    log.info(f"  → {len(flat_docs)} documents written to {output_path}")
+    log.info(f"  → {len(flat_docs)} documentos escritos en {output_path}")
     return len(flat_docs)
 
 def upload_to_s3(local_path: str, s3_key: str):
-    """Upload a local file to S3."""
     s3 = boto3.client("s3", region_name=AWS_REGION)
-    log.info(f"Uploading {local_path} → s3://{S3_BUCKET}/{s3_key}")
+    log.info(f"  Subiendo {local_path} → s3://{S3_BUCKET}/{s3_key}")
     s3.upload_file(local_path, S3_BUCKET, s3_key)
-    log.info("  → Upload complete.")
+    log.info("  → Subida completa.")
 
 def main():
-    date_partition  = datetime.utcnow().strftime("%Y-%m-%d")
-    collections     = [c.strip() for c in COLLECTIONS.split(",") if c.strip()]
+    date_partition = datetime.utcnow().strftime("%Y-%m-%d")
     log.info("=== Ingesta Frontend (MongoDB) ===")
-    log.info(f"Connecting to MongoDB at {MONGO_URI} / DB: {MONGO_DB}")
-    log.info(f"Collections to extract: {collections}")
+    log.info(f"Conectando a MongoDB: {MONGO_URI} / DB: {MONGO_DB}")
 
     client = get_client()
     db     = client[MONGO_DB]
+
+    # Auto-descubrir todas las colecciones de la base de datos
+    collections = db.list_collection_names()
+
+    if not collections:
+        log.warning("No se encontraron colecciones en la base de datos. Verifica MONGO_DB.")
+        client.close()
+        return
+
+    log.info(f"Colecciones encontradas: {collections}")
 
     total_rows = 0
     for collection_name in collections:

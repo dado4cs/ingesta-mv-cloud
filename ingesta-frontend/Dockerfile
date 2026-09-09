@@ -8,7 +8,6 @@ LABEL description="Ingesta de datos: Frontend microservicio (MongoDB) â†’ CSV â†
 # Variables de entorno por defecto (override en docker-compose o en la MV)
 ENV MONGO_URI=mongodb://mongo:27017 \
     MONGO_DB=frontend_db \
-    MONGO_COLLECTIONS=sessions,notifications,preferences,activity_logs \
     S3_BUCKET=my-ingesta-bucket \
     S3_PREFIX=frontend \
     AWS_REGION=us-east-1 \
