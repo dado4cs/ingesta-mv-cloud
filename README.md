@@ -43,7 +43,7 @@ ingesta-mv-cloud/
 ### 1. Clonar y configurar
 
 ```bash
-git clone git@github.com:dado4cs/ingesta-mv-cloud.git
+git clone git@github.com:villabos/ingesta-mv-cloud.git
 cd ingesta-mv-cloud
 cp .env.example .env
 # Editar .env con las credenciales reales
@@ -84,18 +84,18 @@ Todas las variables se configuran en el archivo `.env`. Consulta `.env.example` 
 
 | Imagen                         | Descripción             |
 |--------------------------------|-------------------------|
-| `dado4cs/ingesta-catalogo:latest` | Ingesta PostgreSQL   |
-| `dado4cs/ingesta-comunity:latest` | Ingesta MySQL        |
-| `dado4cs/ingesta-frontend:latest` | Ingesta MongoDB      |
+| `villabos/ingesta-catalogo:latest` | Ingesta PostgreSQL   |
+| `villabos/ingesta-comunity:latest` | Ingesta MySQL        |
+| `villabos/ingesta-frontend:latest` | Ingesta MongoDB      |
 
 Para publicar las imágenes:
 
 ```bash
-docker build -t dado4cs/ingesta-catalogo:latest ./ingesta-catalogo
-docker build -t dado4cs/ingesta-comunity:latest ./ingesta-comunity
-docker build -t dado4cs/ingesta-frontend:latest ./ingesta-frontend
+docker build -t villabos/ingesta-catalogo:latest ./ingesta-catalogo
+docker build -t villabos/ingesta-comunity:latest ./ingesta-comunity
+docker build -t villabos/ingesta-frontend:latest ./ingesta-frontend
 
-docker push dado4cs/ingesta-catalogo:latest
-docker push dado4cs/ingesta-comunity:latest
-docker push dado4cs/ingesta-frontend:latest
+docker push villabos/ingesta-catalogo:latest
+docker push villabos/ingesta-comunity:latest
+docker push villabos/ingesta-frontend:latest
 ```

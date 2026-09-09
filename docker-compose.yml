@@ -8,7 +8,7 @@ services:
 
   # ── Ingesta: backend_catalogo (PostgreSQL) ─────────────────
   ingesta-catalogo:
-    image: dado4cs/ingesta-catalogo:latest
+    image: villabos/ingesta-catalogo:latest
     # Para desarrollo local puedes hacer build en lugar de image:
     # build: ./ingesta-catalogo
     restart: "no"   # El contenedor corre una vez y termina
@@ -29,7 +29,7 @@ services:
 
   # ── Ingesta: backend_comunity (MySQL) ──────────────────────
   ingesta-comunity:
-    image: dado4cs/ingesta-comunity:latest
+    image: villabos/ingesta-comunity:latest
     # build: ./ingesta-comunity
     restart: "no"
     environment:
@@ -45,7 +45,7 @@ services:
 
   # ── Ingesta: frontend (MongoDB) ────────────────────────────
   ingesta-frontend:
-    image: dado4cs/ingesta-frontend:latest
+    image: villabos/ingesta-frontend:latest
     # build: ./ingesta-frontend
     restart: "no"
     environment:
