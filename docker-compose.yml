@@ -1,57 +1,19 @@
-# ============================================================
-#  docker-compose.yml — Ingesta MV Cloud
-#  Uso: docker compose up
-#  Configura las variables de entorno en el archivo .env
-# ============================================================
-
 services:
+  ingesta_catalogo:
+    build: ./ingesta-catalogo
+    image: villabos/ingesta-catalogo:v1
+    container_name: ingesta_catalogo
+    env_file: .env
+    # Se ejecuta y termina (no usar restart: always porque es un proceso de extracción)
 
-  # ── Ingesta: backend_catalogo (PostgreSQL) ─────────────────
-  ingesta-catalogo:
-    image: villabos/ingesta-catalogo:latest
-    # Para desarrollo local puedes hacer build en lugar de image:
-    # build: ./ingesta-catalogo
-    restart: "no"   # El contenedor corre una vez y termina
-    environment:
-      PG_HOST:     ${PG_HOST}
-      PG_PORT:     ${PG_PORT:-5432}
-      PG_DB:       ${PG_DB:-cinema_catalog}
-      PG_USER:     ${PG_USER:-postgres}
-      PG_PASSWORD: ${PG_PASSWORD}
-      S3_BUCKET:   ${S3_BUCKET}
-      S3_PREFIX:   catalogo
-      AWS_REGION:  ${AWS_REGION:-us-east-1}
-      OUTPUT_DIR:  /tmp/output/catalogo
-      # Si usas un rol IAM en la EC2, NO necesitas estas variables.
-      # Solo ponlas si corres fuera de AWS con credenciales de usuario IAM:
-      # AWS_ACCESS_KEY_ID:     ${AWS_ACCESS_KEY_ID}
-      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  ingesta_comunity:
+    build: ./ingesta-comunity
+    image: villabos/ingesta-comunity:v1
+    container_name: ingesta_comunity
+    env_file: .env
 
-  # ── Ingesta: backend_comunity (MySQL) ──────────────────────
-  ingesta-comunity:
-    image: villabos/ingesta-comunity:latest
-    # build: ./ingesta-comunity
-    restart: "no"
-    environment:
-      MYSQL_HOST:     ${MYSQL_HOST}
-      MYSQL_PORT:     ${MYSQL_PORT:-3306}
-      MYSQL_DB:       ${MYSQL_DB:-community_db}
-      MYSQL_USER:     ${MYSQL_USER:-community}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      S3_BUCKET:      ${S3_BUCKET}
-      S3_PREFIX:      comunity
-      AWS_REGION:     ${AWS_REGION:-us-east-1}
-      OUTPUT_DIR:     /tmp/output/comunity
-
-  # ── Ingesta: iteraction (MongoDB) ────────────────────────────
-  ingesta-iteraction:
-    image: villabos/ingesta-iteraction:latest
-    # build: ./ingesta-iteraction
-    restart: "no"
-    environment:
-      MONGO_URI:  ${MONGO_URI}
-      MONGO_DB:   ${MONGO_DB:-iteraction_db}
-      S3_BUCKET:  ${S3_BUCKET}
-      S3_PREFIX:  iteraction
-      AWS_REGION: ${AWS_REGION:-us-east-1}
-      OUTPUT_DIR: /tmp/output/iteraction
+  ingesta_iteraction:
+    build: ./ingesta-iteraction
+    image: villabos/ingesta-iteraction:v1
+    container_name: ingesta_iteraction
+    env_file: .env
